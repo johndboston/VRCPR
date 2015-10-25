@@ -194,9 +194,9 @@
 			'<div id=fingerData ></div>' +
 		'';
 
-		stats = new Stats();
-		stats.domElement.style.cssText = 'position: absolute; right: 0; top: 0; z-index: 100; ';
-		document.body.appendChild( stats.domElement );
+		// stats = new Stats();
+		// stats.domElement.style.cssText = 'position: absolute; right: 0; top: 0; z-index: 100; ';
+		// document.body.appendChild( stats.domElement );
 
 		renderer = new THREE.WebGLRenderer( { alpha: 1, antialias: true, clearColor: 0xffffff }  );
 		renderer.setSize( window.innerWidth, window.innerHeight );
@@ -255,7 +255,7 @@
 
 		renderer.render( scene, camera );
 		controls.update();
-		stats.update();
+		// stats.update();
 
 	}
 
