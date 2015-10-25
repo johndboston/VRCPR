@@ -15,11 +15,9 @@
 <script src=http://mrdoob.github.io/three.js/examples/js/libs/stats.min.js ></script>
 
  
-    <script src="MTLLoader.js"></script>
-    <script src="OBJMTLLoader.js"></script>
 
-
-
+    <script src="OBJLoader.js"></script>
+	
 <script>
 
 	var fingerlings = {};
@@ -67,12 +65,9 @@
 		// mesh = new THREE.GridHelper( 250, 10 );
 		// scene.add( mesh );
 
-		var loader = new THREE.OBJMTLLoader();
-				loader.load( 'male02.obj', 'male02_dds.mtl', function ( object ) {
-
-					// object.position.y = - 80;
-					scene.add( object );
-
+		var loader = new THREE.OBJLoader();
+		loader.load( 'CPRMan.obj', function ( object ) {
+			scene.add( object );
 		});
 
 // axes
