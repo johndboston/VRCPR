@@ -22,6 +22,57 @@
 	<script src="OBJMTLLoader.js"></script>
 	<script src="OBJLoader.js"></script>
 
+	<script>
+	/*
+	* Debug parameters.
+	*/
+	WebVRConfig = {
+	/**
+	* webvr-polyfill configuration
+	*/
+	
+	// Forces availability of VR mode.
+	//FORCE_ENABLE_VR: true, // Default: false.
+	// Complementary filter coefficient. 0 for accelerometer, 1 for gyro.
+	//K_FILTER: 0.98, // Default: 0.98.
+	// How far into the future to predict during fast motion.
+	//PREDICTION_TIME_S: 0.050, // Default: 0.050s.
+	
+	/**
+	* webvr-boilerplate configuration
+	*/
+	// Forces distortion in VR mode.
+	//FORCE_DISTORTION: true, // Default: false.
+	// Override the distortion background color.
+	//DISTORTION_BGCOLOR: {x: 1, y: 0, z: 0, w: 1}, // Default: (0,0,0,1).
+	};
+	</script>
+	
+	<!--
+	three.js 3d library
+	-->
+	<!--<script src="bower_components/threejs/build/three.js"></script>-->
+	
+	<!--
+	VRControls.js acquires positional information from connected VR devices and applies the transformations to a three.js camera object.
+	-->
+	<script src="bower_components/threejs/examples/js/controls/VRControls.js"></script>
+	
+	<!--
+	VREffect.js handles stereo camera setup and rendering.
+	-->
+	<script src="bower_components/threejs/examples/js/effects/VREffect.js"></script>
+	
+	<!--
+	A polyfill for WebVR using the Device{Motion,Orientation}Event API.
+	-->
+	<script src="bower_components/webvr-polyfill/build/webvr-polyfill.js"></script>
+	
+	<!--
+	Helps enter and exit VR mode, provides best practices while in VR.
+	-->
+	<script src="build/webvr-manager.js"></script>
+
 	<style>
 		body{
 			background: transparent!important;
@@ -200,14 +251,25 @@
 
 		renderer = new THREE.WebGLRenderer( { alpha: 1, antialias: true, clearColor: 0xffffff }  );
 		renderer.setSize( window.innerWidth, window.innerHeight );
+		
 		document.body.appendChild( renderer.domElement );
 
 		camera = new THREE.PerspectiveCamera( 10, window.innerWidth / window.innerHeight, 1, 5000 );
 		camera.position.set( 2000, 2000, 2000 );
 
 		controls = new THREE.TrackballControls( camera, renderer.domElement );
+		
+		// Apply VR headset positional data to camera
+		// controls = new THREE.VRControls( camera );
+		
+		// Apply VR stereo rendering to renderer
+		var effect = new THREE.VREffect(renderer);
+		effect.setSize(window.innerWidth, window.innerHeight);
 
 		scene = new THREE.Scene();
+
+		// Create VR manager
+		var manager = new WebVRManager(renderer, effect, {hideButton: false});
 
 // Dummy
 		var spotLight = new THREE.SpotLight(0xffffff);
@@ -230,8 +292,8 @@
 			scene.add( object );
 		});
 // axes
-		// var axis = new THREE.AxisHelper( 250 );
-		// scene.add( axis );
+		var axis = new THREE.AxisHelper( 250 );
+		scene.add( axis );
 
 		renderer.render( scene, camera );
 
@@ -253,8 +315,8 @@
 
 		});
 
-		renderer.render( scene, camera );
 		controls.update();
+		renderer.render( scene, camera );
 		// stats.update();
 
 	}
@@ -390,69 +452,69 @@
 	function v(  x, y, z){ return new THREE.Vector3( x, y, z ); }
 
 // This allows us to move the cat even while in an iFrame.
-		Leap.loopController.setBackground(true);
+	Leap.loopController.setBackground(true);
 
-	    var up_count = 0;
-	    var down_count = 0;
-	    var seekBar = document.querySelector('.seekbar');
-	    var actionBar = document.querySelector('.actionbar');
+	var up_count = 0;
+	var down_count = 0;
+	var seekBar = document.querySelector('.seekbar');
+	var actionBar = document.querySelector('.actionbar');
 
 
-	    var controllerOptions = {enableGestures: true};
-		Leap.loop(controllerOptions, function(frame) {
+	var controllerOptions = {enableGestures: true};
+	Leap.loop(controllerOptions, function(frame) {
 
-			// Display Gesture object data
-			if (frame.gestures.length > 0) {
-				for (var i = 0; i < frame.gestures.length; i++) {
-					var gesture = frame.gestures[i];
-					if(gesture.type == "swipe") {
-					  //Classify swipe as either horizontal or vertical
-					  var isHorizontal = Math.abs(gesture.direction[0]) > Math.abs(gesture.direction[1]);
-					  //Classify as right-left or up-down
-					  if(isHorizontal){
-					      if(gesture.direction[0] > 0){
-					          swipeDirection = "right";
-					      } else {
-					          swipeDirection = "left";
-					      }
-					  } else { //vertical
-					      if(gesture.direction[1] > 0){
-					          swipeDirection = "up";
-					          up_count++;
+		// Display Gesture object data
+		if (frame.gestures.length > 0) {
+			for (var i = 0; i < frame.gestures.length; i++) {
+				var gesture = frame.gestures[i];
+				if(gesture.type == "swipe") {
+					//Classify swipe as either horizontal or vertical
+					var isHorizontal = Math.abs(gesture.direction[0]) > Math.abs(gesture.direction[1]);
+					//Classify as right-left or up-down
+					if(isHorizontal){
+						if(gesture.direction[0] > 0){
+							swipeDirection = "right";
+						} else {
+							swipeDirection = "left";
+						}
+					} else { //vertical
+						if(gesture.direction[1] > 0){
+							swipeDirection = "up";
+							up_count++;
 
-					          // UDPATE BAR
-					          seekBar.value++;
-					          actionBar.style.width = parseInt(actionBar.style.width.substring(0, actionBar.style.width.length - 2)) - 1 + 'px';
-					      } else {
-					          swipeDirection = "down";
-					          down_count++;
+							// UDPATE BAR
+							seekBar.value++;
+							actionBar.style.width = parseInt(actionBar.style.width.substring(0, actionBar.style.width.length - 2)) - 1 + 'px';
+						} else {
+							swipeDirection = "down";
+							down_count++;
 
-					          // UDPATE BAR
-					          seekBar.value--;
+							// UDPATE BAR
+							seekBar.value--;
 
-					          actionBar.style.width = parseInt(actionBar.style.width.substring(0, actionBar.style.width.length - 2)) + 1 + 'px';
-					          
-					      }                  
-					  }
-					  console.log(swipeDirection)
+							actionBar.style.width = parseInt(actionBar.style.width.substring(0, actionBar.style.width.length - 2)) + 1 + 'px';
+							
+						}                  
 					}
+					console.log(swipeDirection)
 				}
 			}
-		});
-
-		if(actionBar.style.width < 30){
-			actionBar.addClass('progress-bar-danger');
 		}
+	});
 
-		function getRandomInt(min, max) {
-		    return Math.floor(Math.random() * (max - min + 1)) + min;
-		}
+	if(actionBar.style.width < 30){
+		actionBar.addClass('progress-bar-danger');
+	}
+
+	function getRandomInt(min, max) {
+		return Math.floor(Math.random() * (max - min + 1)) + min;
+	}
 
 
 </script>
 
 	<!-- Toastr script -->
     <script src="assets/js/plugins/toastr/toastr.min.js"></script>
-
+	
 </body>
 </html>
